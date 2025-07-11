@@ -1,128 +1,67 @@
 import { useEffect, useRef } from "react";
+import { MapContainer, TileLayer, FeatureGroup, Rectangle } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import "leaflet-draw/dist/leaflet.draw.css";
+import "leaflet-draw";
+
 import { generateTGS } from "../utils/generateTGS";
 
-const platform = new window.H.service.Platform({
-  apikey: "u13md3V2AYn5epRLY4ibspMoZbW6B8SlS6FvjytsVJc", // Replace with your HERE API key
-});
-
 export default function HereMapComponent() {
-  const mapRef = useRef(null);
+  const drawnLayerRef = useRef(null);
 
   useEffect(() => {
-    const defaultLayers = platform.createDefaultLayers();
+    const map = L.map("map").setView([-37.8136, 144.9631], 14);
 
-    const map = new window.H.Map(
-      mapRef.current,
-      defaultLayers.vector.normal.map,
-      {
-        center: { lat: -37.8136, lng: 144.9631 }, // Melbourne
-        zoom: 14,
-        pixelRatio: window.devicePixelRatio || 1,
-      }
-    );
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
 
-    const behavior = new window.H.mapevents.Behavior(
-      new window.H.mapevents.MapEvents(map)
-    );
-    const ui = window.H.ui.UI.createDefault(map, defaultLayers);
+    const drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
 
-    // Drawing Mode
-    let drawing = false;
-    let startPoint = null;
-    let rect = null;
+    const drawControl = new L.Control.Draw({
+      draw: {
+        polygon: false,
+        polyline: false,
+        circle: false,
+        marker: false,
+        circlemarker: false,
+        rectangle: true,
+      },
+      edit: {
+        featureGroup: drawnItems,
+        remove: true,
+      },
+    });
+    map.addControl(drawControl);
 
-    map.addEventListener("tap", function (evt) {
-      const coord = map.screenToGeo(
-        evt.currentPointer.viewportX,
-        evt.currentPointer.viewportY
-      );
+    map.on(L.Draw.Event.CREATED, function (e) {
+      drawnItems.clearLayers();
+      const layer = e.layer;
+      drawnItems.addLayer(layer);
 
-      if (!drawing) {
-        startPoint = coord;
-        drawing = true;
-      } else {
-        const endPoint = coord;
+      const bounds = layer.getBounds();
+      const tgsData = generateTGS({
+        top: bounds.getNorth(),
+        bottom: bounds.getSouth(),
+        left: bounds.getWest(),
+        right: bounds.getEast(),
+      });
 
-        const bounds = new window.H.geo.Rect(
-          Math.max(startPoint.lat, endPoint.lat),
-          Math.min(startPoint.lng, endPoint.lng),
-          Math.min(startPoint.lat, endPoint.lat),
-          Math.max(startPoint.lng, endPoint.lng)
-        );
+      tgsData.forEach((sign) => {
+        const marker = L.marker([sign.lat, sign.lng], {
+          title: sign.type,
+        }).addTo(map);
+        marker.bindTooltip(sign.type, { permanent: true, direction: "top" });
+      });
 
-        if (rect) {
-          map.removeObject(rect);
-        }
-
-        rect = new window.H.map.Rect(bounds, {
-          style: { fillColor: "rgba(255,0,0,0.3)", lineWidth: 2 },
-        });
-
-        map.addObject(rect);
-        drawing = false;
-
-        console.log("Zone bounds:", bounds.getTop(), bounds.getLeft(), bounds.getBottom(), bounds.getRight());
-        const signs = generateTGS(bounds);
-        window.signUpdate(signs);
-
-        signs.forEach((sign) => {
-          const marker = new window.H.map.Marker(
-            { lat: sign.lat, lng: sign.lng },
-            { icon: new window.H.map.Icon(getSignIcon(sign.type)) }
-          );
-          map.addObject(marker);
-        });
-      }
+      // Send signs to export button
+      if (window.signUpdate) window.signUpdate(tgsData);
     });
 
-    window.addEventListener("resize", () => map.getViewPort().resize());
-
-    return () => {
-      map.dispose();
-    };
+    return () => map.remove();
   }, []);
 
-  function getSignIcon(type) {
-    const colors = {
-      WORK_AHEAD: "orange",
-      REDUCE_SPEED: "yellow",
-      END_ROAD_WORK: "green",
-    };
-
-    const canvas = document.createElement("canvas");
-    canvas.width = 60;
-    canvas.height = 30;
-    const ctx = canvas.getContext("2d");
-
-    ctx.fillStyle = colors[type] || "gray";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "black";
-    ctx.font = "bold 10px sans-serif";
-    ctx.fillText(type, 5, 18);
-
-    return new window.H.map.Icon(canvas);
-  }
-
-  const geocoder = platform.getSearchService();
-
-  window.addEventListener("search-address", (e) => {
-    const query = e.detail;
-    geocoder.geocode({ q: query }, (result) => {
-      if (result.items.length > 0) {
-        const location = result.items[0].position;
-        map.setCenter({ lat: location.lat, lng: location.lng });
-        map.setZoom(16);
-      }
-    });
-  });
-
-  return (
-    <div
-      ref={mapRef}
-      style={{
-        height: "100vh",
-        width: "100vw",
-      }}
-    />
-  );
+  return <div id="map" style={{ height: "100vh", width: "100%" }} />;
 } 
