@@ -1,3 +1,4 @@
+import 'leaflet/dist/leaflet.css';
 import HereMapComponent from "./components/HereMapComponent";
 import { useState } from "react";
 
