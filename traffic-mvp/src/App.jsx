@@ -1,8 +1,8 @@
-import HereMapComponent from './components/HereMapComponent';
+import HereMapComponent from "./components/HereMapComponent";
 
 export default function App() {
   return (
-    <div style={{ height: '100vh', width: '100vw' }}>
+    <div style={{ height: "100vh", width: "100vw" }}>
       <HereMapComponent />
     </div>
   );

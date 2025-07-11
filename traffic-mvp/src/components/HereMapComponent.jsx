@@ -20,12 +20,52 @@ export default function HereMapComponent() {
       }
     );
 
-    window.addEventListener("resize", () => map.getViewPort().resize());
-
     const behavior = new window.H.mapevents.Behavior(
       new window.H.mapevents.MapEvents(map)
     );
     const ui = window.H.ui.UI.createDefault(map, defaultLayers);
+
+    // Drawing Mode
+    let drawing = false;
+    let startPoint = null;
+    let rect = null;
+
+    map.addEventListener("tap", function (evt) {
+      const coord = map.screenToGeo(
+        evt.currentPointer.viewportX,
+        evt.currentPointer.viewportY
+      );
+
+      if (!drawing) {
+        startPoint = coord;
+        drawing = true;
+      } else {
+        const endPoint = coord;
+
+        const bounds = new window.H.geo.Rect(
+          Math.max(startPoint.lat, endPoint.lat),
+          Math.min(startPoint.lng, endPoint.lng),
+          Math.min(startPoint.lat, endPoint.lat),
+          Math.max(startPoint.lng, endPoint.lng)
+        );
+
+        if (rect) {
+          map.removeObject(rect);
+        }
+
+        rect = new window.H.map.Rect(bounds, {
+          style: { fillColor: "rgba(255,0,0,0.3)", lineWidth: 2 },
+        });
+
+        map.addObject(rect);
+        drawing = false;
+
+        console.log("Zone bounds:", bounds.getTop(), bounds.getLeft(), bounds.getBottom(), bounds.getRight());
+        // TODO: Call generateTGS(bounds) here
+      }
+    });
+
+    window.addEventListener("resize", () => map.getViewPort().resize());
 
     return () => {
       map.dispose();
