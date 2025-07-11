@@ -63,6 +63,7 @@ export default function HereMapComponent() {
 
         console.log("Zone bounds:", bounds.getTop(), bounds.getLeft(), bounds.getBottom(), bounds.getRight());
         const signs = generateTGS(bounds);
+        window.signUpdate(signs);
 
         signs.forEach((sign) => {
           const marker = new window.H.map.Marker(
