@@ -8,7 +8,6 @@ export default function HereMapComponent() {
       style={{
         width: '100vw',
         height: '100vh',
-        backgroundColor: 'red', // diagnostic
       }}
     >
       <MapContainer
