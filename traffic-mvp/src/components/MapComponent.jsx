@@ -16,18 +16,22 @@ L.Icon.Default.mergeOptions({
 });
 
 export default function MapComponent() {
+  const hereApiKey = import.meta.env.VITE_HERE_API_KEY;
+
+  const tileLayerUrl = hereApiKey
+    ? `https://{s}.base.maps.ls.hereapi.com/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?apikey=${hereApiKey}`
+    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
   return (
-    <MapContainer
-      center={[-37.8136, 144.9631]} // Melbourne
-      zoom={13}
-      style={{ height: "100%", width: "100%" }}
-    >
+    <MapContainer>
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        url={tileLayerUrl}
+        attribution='Map &copy; HERE or OpenStreetMap'
+        subdomains={['1', '2', '3', '4']}
+        tileSize={256}
       />
       <Marker position={[-37.8136, 144.9631]}>
-        <Popup>Melbourne</Popup>
+        {/* Marker content */}
       </Marker>
     </MapContainer>
   );
