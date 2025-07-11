@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { MapContainer, TileLayer, FeatureGroup, Rectangle } from "react-leaflet";
+import { MapContainer, TileLayer, FeatureGroup, Rectangle, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
@@ -71,9 +71,12 @@ export default function HereMapComponent() {
       style={{ height: '100vh', width: '100%' }}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution='&copy; OpenStreetMap contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <Marker position={[-37.8136, 144.9631]}>
+        <Popup>Melbourne</Popup>
+      </Marker>
       <FeatureGroup>
         <Rectangle bounds={[[51.49, -0.09], [51.5, -0.08]]} />
       </FeatureGroup>

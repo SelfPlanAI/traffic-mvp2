@@ -3,9 +3,8 @@ import { useState } from "react";
 
 export default function App() {
   return (
-    <>
-      <div style={{ padding: '1rem', color: 'white' }}>UI Test</div>
+    <div style={{ height: "100vh", backgroundColor: "#1a1a1a" }}>
       <HereMapComponent />
-    </>
+    </div>
   );
 }
