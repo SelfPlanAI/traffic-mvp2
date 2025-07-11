@@ -3,13 +3,7 @@ import 'leaflet/dist/leaflet.css';
 
 export default function HereMapComponent() {
   return (
-    <div
-      id="map"
-      style={{
-        width: '100vw',
-        height: '100vh',
-      }}
-    >
+    <div id="map" style={{ height: '100vh', width: '100vw' }}>
       <MapContainer
         center={[-37.8136, 144.9631]} // Melbourne
         zoom={13}
