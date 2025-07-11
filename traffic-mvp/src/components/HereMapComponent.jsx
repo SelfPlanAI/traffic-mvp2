@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { generateTGS } from "../utils/generateTGS";
 
 const platform = new window.H.service.Platform({
   apikey: "u13md3V2AYn5epRLY4ibspMoZbW6B8SlS6FvjytsVJc", // Replace with your HERE API key
@@ -61,7 +62,15 @@ export default function HereMapComponent() {
         drawing = false;
 
         console.log("Zone bounds:", bounds.getTop(), bounds.getLeft(), bounds.getBottom(), bounds.getRight());
-        // TODO: Call generateTGS(bounds) here
+        const signs = generateTGS(bounds);
+
+        signs.forEach((sign) => {
+          const marker = new window.H.map.Marker(
+            { lat: sign.lat, lng: sign.lng },
+            { icon: new window.H.map.Icon(getSignIcon(sign.type)) }
+          );
+          map.addObject(marker);
+        });
       }
     });
 
@@ -71,6 +80,40 @@ export default function HereMapComponent() {
       map.dispose();
     };
   }, []);
+
+  function getSignIcon(type) {
+    const colors = {
+      WORK_AHEAD: "orange",
+      REDUCE_SPEED: "yellow",
+      END_ROAD_WORK: "green",
+    };
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 60;
+    canvas.height = 30;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = colors[type] || "gray";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "black";
+    ctx.font = "bold 10px sans-serif";
+    ctx.fillText(type, 5, 18);
+
+    return new window.H.map.Icon(canvas);
+  }
+
+  const geocoder = platform.getSearchService();
+
+  window.addEventListener("search-address", (e) => {
+    const query = e.detail;
+    geocoder.geocode({ q: query }, (result) => {
+      if (result.items.length > 0) {
+        const location = result.items[0].position;
+        map.setCenter({ lat: location.lat, lng: location.lng });
+        map.setZoom(16);
+      }
+    });
+  });
 
   return (
     <div
