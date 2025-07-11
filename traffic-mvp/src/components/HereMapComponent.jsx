@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 
 const HereMapComponent = () => {
   useEffect(() => {
+    console.log('Map component mounted');
     const platform = new window.H.service.Platform({
       apikey: 'u13md3V2AYn5epRLY4ibspMoZbW6B8SlS6FvjytsVJc', // Your HERE API key
     });
@@ -21,7 +22,7 @@ const HereMapComponent = () => {
     window.addEventListener('resize', () => map.getViewPort().resize());
   }, []);
 
-  return <div id="mapContainer" style={{ width: '100%', height: '500px' }} />;
+  return <div id="mapContainer" style={{ width: '100%', height: '500px', backgroundColor: 'lightgray' }} />;
 };
 
 export default HereMapComponent; 
