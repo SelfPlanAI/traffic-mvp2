@@ -4,12 +4,10 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import HereMapComponent from './components/HereMapComponent';
 
-function App() {
+export default function App() {
   return (
-    <div className="App">
-      <HereMapComponent />
+    <div style={{ padding: '2rem', color: 'black' }}>
+      🚦 App is rendering!
     </div>
   );
 }
-
-export default App
